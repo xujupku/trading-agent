@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 import os
 import time
+import random
 import logging
+import threading
 
 import pandas as pd
 import yfinance as yf
@@ -13,15 +15,31 @@ CACHE_DIR = os.path.join(os.path.expanduser("~"), ".tradingagents", "cache")
 
 _ticker_cache: dict[str, yf.Ticker] = {}
 
+_request_lock = threading.Lock()
+_last_request_time = 0.0
+_MIN_REQUEST_INTERVAL = 0.5
 
-def yf_retry(func, max_retries=3, base_delay=2.0):
+
+def _throttle():
+    global _last_request_time
+    with _request_lock:
+        now = time.monotonic()
+        elapsed = now - _last_request_time
+        if elapsed < _MIN_REQUEST_INTERVAL:
+            time.sleep(_MIN_REQUEST_INTERVAL - elapsed)
+        _last_request_time = time.monotonic()
+
+
+def yf_retry(func, max_retries=5, base_delay=2.0):
     for attempt in range(max_retries + 1):
+        _throttle()
         try:
             return func()
         except YFRateLimitError:
             if attempt < max_retries:
-                delay = base_delay * (2 ** attempt)
-                logger.warning(f"Rate limited, retrying in {delay:.0f}s (attempt {attempt + 1}/{max_retries})")
+                jitter = random.uniform(0, 1)
+                delay = base_delay * (2 ** attempt) + jitter
+                logger.warning(f"Rate limited, retrying in {delay:.1f}s (attempt {attempt + 1}/{max_retries})")
                 time.sleep(delay)
             else:
                 raise
