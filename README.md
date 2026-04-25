@@ -87,7 +87,7 @@ Key Risks: ...
 
 直接拷贝下面这句话发给你的 AI 助手：
 
-> 帮我安装 TradingAgent Skill，仓库地址：https://github.com/your-repo/trading-agent-skill
+> 帮我安装 TradingAgent Skill，仓库地址：https://github.com/xujupku/trading-agent
 
 Agent 会自动克隆仓库并安装到对应的 Skill 目录。
 
@@ -105,7 +105,7 @@ Agent 会自动克隆仓库并安装到对应的 Skill 目录。
 
 ```bash
 # 示例：安装到 Trae
-git clone https://github.com/your-repo/trading-agent-skill.git \
+git clone https://github.com/xujupku/trading-agent.git \
   .trae/skills/trading-agent
 ```
 
